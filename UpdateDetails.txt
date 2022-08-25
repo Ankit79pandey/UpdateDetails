@@ -1,0 +1,486 @@
+Problem Statement : Create a Spring MVC web application that will retrieve users based on their user ID. The retrieved user data will then be edited in a form and updated in the database. The entire database processing has to be done using Hibernate. Front pages will be made in JSP.
+*************************************************************************
+
+1.pom.xml
+  --------
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.simplilearn</groupId>
+	<artifactId>UpdateDetails</artifactId>
+	<packaging>war</packaging>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>UpdateDetails Maven Webapp</name>
+	<url>http://maven.apache.org</url>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.servlet.jsp.jstl/jstl -->
+
+
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-context -->
+		<!-- https://mvnrepository.com/artifact/javax.servlet.jsp.jstl/jstl -->
+
+		<!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>4.0.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>8.0.30</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>5.3.22</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-context -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>5.3.22</version>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>5.3.22</version>
+		</dependency>
+		
+		<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>jstl</artifactId>
+    <version>1.2</version>
+</dependency>
+
+
+	</dependencies>
+	<build>
+		<finalName>UpdateDetails</finalName>
+	</build>
+</project>
+
+************************************************************************
+
+2. web.xml
+   --------
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+  <display-name>Archetype Created Web Application</display-name>
+  
+  <servlet>
+  <servlet-name>spring</servlet-name>
+  <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+  
+  </servlet>
+  
+  <servlet-mapping>
+  <servlet-name>spring</servlet-name>
+  <url-pattern>/</url-pattern>
+  </servlet-mapping>
+</web-app>
+************************************************************************
+3. spring-servlet.xml
+   -------------------
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd 
+     http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx.xsd   
+    ">
+    <context:annotation-config></context:annotation-config>
+
+
+	<context:component-scan
+		base-package="com.simplilearn.controller" />
+		
+		 <bean id="jspViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="suffix" value=".jsp"></property>
+        <property name="prefix" value="/WEB-INF/view/"></property>
+        </bean>
+		
+		 <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>
+        <property name="url" value="jdbc:mysql://localhost:3306/addproducts"></property>
+        <property name="username" value="root"></property>
+        <property name="password" value="Ankit@1998"></property>
+        
+        </bean>
+        
+        
+        <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        	<property name="dataSource" ref="dataSource"></property>
+        </bean>
+        
+        <bean id="dao" class="com.simplilearn.dao.EProductDao"></bean>
+		
+		
+		
+		
+		</beans>
+************************************************************************
+4. index.jsp 
+   ---------
+<html>
+<body  bgcolor="cadetblue">
+
+<div style="text-align:center">
+<form action="details">
+<h1>Fetch the data using Id </h1>
+Id :<input type="text" name="Id" placeholder="Enter the Id"><br><br>
+
+<button type="submit" style="text-align:center ;background-color:green;color:white;height:1.5rem;width:120px;">Submit</button><br><br>
+
+<h1><a href="listproduct">List All Product</a></h1>
+<br><br>
+
+<h1><a href="Update.jsp">Update Product</a></h1>
+
+
+</form>
+</div>
+</body>
+</html>
+************************************************************************
+5. Update.jsp
+   ----------
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body bgcolor="silver">
+<div style="text-align:center">
+<h1>Update Product</h1>
+
+<form action="Update">
+<h3>Id :<input type="text" name="id" placeholder="please enter integer values"><br><br></h3>
+<h3>Name :<input type="text" name="name" placeholder="Enter the name of product"><br><br></h3>
+<h3>price :<input type="text" name="price" placeholder="Enter the price"><br><br></h3>
+<h3>AddedDate :<input type="date" name="date" placeholder="Enter the date"><br><br></h3>
+<button type="submit">Submit</button>
+</form><br><br>
+</div>
+</body>
+</html>
+************************************************************************
+6. view/details.jsp
+   ----------------
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" isELIgnored="false" %>
+    <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body bgcolor="lightgreen">
+<div style="margin-top:10%;margin-left:35%;color:gray">
+<h1 >Products Details Page</h1><br>
+<c:set var="product" value="${obj }"></c:set>
+<h2>Name: ${product.name } </h2><br>
+<h2>Price: ${product.price }</h2> <br>
+<h2>Date: ${product.dateAdded }</h2> <br>
+</div>
+</body>
+</html>
+************************************************************************
+7. view/products.jsp
+   ------------------
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1" isELIgnored="false"%>
+    <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body bgcolor="aqua" >
+<div style="margin-left:35%;margin-top:10%;">
+<h1>ECommerce Products </h1><br>
+
+<table style="border:solid black;text-align:center;width:500px">
+	<tr style="border:solid black"><th>ID</th><th>NAME</th><th>PRICE</th><th>DATE</th></tr>
+	<c:forEach var="p" items="${list }">
+	
+		<tr style="border:solid black">
+			<td>${p.id }</td>
+			<td>${p.name }</td>
+			<td>${p.price }</td>
+			<td>${p.dateAdded }</td>
+		
+		</tr>
+	
+	</c:forEach>
+	
+	
+
+</table>
+</div>
+</body>
+</html>
+
+************************************************************************
+8.src/main/java/com.simplilearn.controller.MainController.java
+  ------------------------------------------------------------
+package com.simplilearn.controller;
+
+
+
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+ 
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.GetMapping;
+import com.simplilearn.dao.EProductDao;
+import com.simplilearn.entity.EProductEntity;
+
+@Controller
+public class MainController {
+	
+ 
+	
+	@Autowired
+	EProductDao dao;
+
+	
+	@GetMapping("/listproduct")
+	public String getAllProducts(ModelMap map) {
+		
+		
+		List<EProductEntity> list= dao.getAllProducts();
+		map.addAttribute("list", list);
+		System.out.println(list);
+		return "products";
+		
+	}
+	
+	@GetMapping("/details")
+	public String getProduct(HttpServletRequest request,ModelMap map) {
+		String id=(request.getParameter("Id"));
+		System.out.println(id);
+		int Id=Integer.parseInt(id);
+		EProductEntity entity=dao.getProductById(Id);
+		map.addAttribute("obj",entity);
+		return "details";
+	}
+	
+	@GetMapping("/Update")
+	public String UpdateProduct(HttpServletRequest request,ModelMap map) throws ParseException {
+		System.out.println(request.getParameter("id"));
+		int id=Integer.parseInt(request.getParameter("id"));
+		String  Name=(request.getParameter("name"));
+		int Price=Integer.parseInt(request.getParameter("price"));
+		String Date=request.getParameter("date");
+		
+		
+		EProductEntity entity=dao.updateProduct(id,Name,Price,Date);
+		
+		map.addAttribute("obj",entity);
+		return "index";
+	}
+}
+************************************************************************9. src/main/java/com.simplilearn.dao.EProductDao.java
+   ---------------------------------------------------
+package com.simplilearn.dao;
+
+
+
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.*;
+import org.springframework.stereotype.Repository;
+import com.simplilearn.entity.EProductEntity;
+
+@Repository
+public class EProductDao {
+
+
+	@Autowired
+	JdbcTemplate jdbcTemplate;
+	
+	
+	public List<EProductEntity> getAllProducts(){
+		
+		return jdbcTemplate.query("select * from eproduct",new RowMapper<EProductEntity>() {
+			
+			public EProductEntity mapRow(ResultSet rs, int rowNum) throws SQLException{
+				
+				EProductEntity obj= new EProductEntity();
+				obj.setId(rs.getInt(1));
+				obj.setName(rs.getString(2));
+				obj.setPrice(rs.getInt(3));
+				obj.setDateAdded(rs.getString(4));
+				
+				System.out.println(rs.getString(2));
+				return obj;
+			}
+			
+			
+		});
+		
+		
+	}
+	
+	public EProductEntity getProductById(int id) {
+		return jdbcTemplate.query("select * from eproduct where id="+id, 
+new ResultSetExtractor<EProductEntity>() {
+
+	public EProductEntity extractData(ResultSet rs) throws SQLException, DataAccessException {
+		// TODO Auto-generated method stub
+		if(rs.next())
+		{
+			EProductEntity obj= new EProductEntity();
+			obj.setId(rs.getInt(1));
+			obj.setName(rs.getString(2));
+			obj.setPrice(rs.getInt(3));
+			obj.setDateAdded(rs.getString(4));
+			return obj;
+		}
+		return null;
+	}});
+	}
+
+	public void updateProduct(EProductEntity obj) {
+		if(obj.getId()>0) {
+			String sql= "update eproduct set name=?, price=?, dateAdded=? where id=?";
+			jdbcTemplate.update(sql,obj.getName(),obj.getPrice(),obj.getDateAdded(),obj.getId());
+		}
+		else {
+			String sql= "insert into eproduct (name,price,dateAdded) values (?,?,?)";
+			jdbcTemplate.update(sql,obj.getName(),obj.getPrice(),obj.getDateAdded());
+		}
+	}
+
+	public EProductEntity updateProduct(int id, String name, int price, String date) {
+		if(id>0) {
+			String sql= "update eproduct set name=?, price=?,dateAdded=? where id=?";
+			jdbcTemplate.update(sql,name,price,date,id);
+		}
+		else {
+			String sql= "insert into eproduct (name,price,dateAdded) values (?,?,?)";
+			jdbcTemplate.update(sql,name,price,date);
+		}
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	
+	
+}
+************************************************************************
+
+10. src/main/java/com.simplilearn.entity.EProductEntity.java
+    ---------------------------------------------------------
+
+package com.simplilearn.entity;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+public class EProductEntity {
+	
+	private int id;
+	private String name;
+	private int price;
+	private String dateAdded;
+	
+	public EProductEntity() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public EProductEntity(String name, int price, String dateAdded) {
+		super();
+		this.name = name;
+		this.price = price;
+		this.dateAdded = dateAdded;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getPrice() {
+		return price;
+	}
+
+	public void setPrice(int price) {
+		this.price = price;
+	}
+
+	public String getDateAdded() {
+		return dateAdded;
+	}
+
+	public void setDateAdded(String dateAdded) {
+		this.dateAdded = dateAdded;
+	}
+
+	@Override
+	public String toString() {
+		return "EProductEntity [id=" + id + ", name=" + name + ", price=" + price + ", dateAdded=" + dateAdded + "]";
+	}
+	
+	
+
+}
+************************************************************************
